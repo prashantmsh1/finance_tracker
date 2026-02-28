@@ -1,4 +1,6 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import path from "path";
+config({ path: path.resolve(process.cwd(), "../../.env") });
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema.js";
@@ -10,3 +12,4 @@ const pool = new Pool({
 export const db = drizzle(pool, { schema });
 
 export type Database = typeof db;
+export * from "drizzle-orm";

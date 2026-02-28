@@ -1,0 +1,25 @@
+{
+    "name": "@expense-tracker/db",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts",
+        "./schema": "./src/schema.ts"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch"
+    },
+    "dependencies": {
+        "drizzle-orm": "^0.38.0",
+        "pg": "^8.13.0",
+        "dotenv": "^16.4.0"
+    },
+    "devDependencies": {
+        "@types/pg": "^8.11.0",
+        "drizzle-kit": "^0.30.0",
+        "typescript": "^5.7.0",
+        "@expense-tracker/config": "workspace:*"
+    }
+}

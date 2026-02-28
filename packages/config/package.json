@@ -1,0 +1,9 @@
+{
+    "name": "@expense-tracker/config",
+    "version": "0.0.0",
+    "private": true,
+    "exports": {
+        "./tsconfig/*": "./tsconfig/*.json",
+        "./eslint/*": "./eslint/*.mjs"
+    }
+}

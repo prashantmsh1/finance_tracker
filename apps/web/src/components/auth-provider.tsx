@@ -1,74 +1,67 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore, type User } from "@/store/auth-store";
+import { usePermissionStore } from "@/store/permission-store";
 
-export interface User {
-    id: string;
-    email: string;
-    name: string;
-    role: "admin" | "user" | "read-only";
-}
+export type { User };
 
-interface AuthContextType {
-    user: User | null;
-    isLoading: boolean;
-    login: (user: User) => void;
-    logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const { setUser, clearUser, setLoading } = useAuthStore();
+    const setReadOnly = usePermissionStore((s) => s.setReadOnly);
 
     useEffect(() => {
-        // Fetch current user session automatically on mount
+        // Background session validation against the server
         const checkSession = async () => {
             try {
                 const res = await fetch("/api/auth/me");
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data.user);
+                    // Sync read-only flag based on user role
+                    setReadOnly(data.user.role === "read-only");
+                } else {
+                    // Cookie expired or invalid — clear persisted state
+                    clearUser();
                 }
             } catch (error) {
                 console.error("Failed to fetch session:", error);
             } finally {
-                setIsLoading(false);
+                setLoading(false);
             }
         };
 
         checkSession();
-    }, []);
+    }, [setUser, clearUser, setLoading, setReadOnly]);
+
+    return <>{children}</>;
+}
+
+export function useAuth() {
+    const user = useAuthStore((s) => s.user);
+    const isLoading = useAuthStore((s) => s.isLoading);
+    const storeSetUser = useAuthStore((s) => s.setUser);
+    const storeClearUser = useAuthStore((s) => s.clearUser);
+    const setReadOnly = usePermissionStore((s) => s.setReadOnly);
+    const router = useRouter();
 
     const login = (userData: User) => {
-        setUser(userData);
-        router.push("/");
+        storeSetUser(userData);
+        setReadOnly(userData.role === "read-only");
+        router.push("/dashboard");
     };
 
     const logout = async () => {
         try {
             await fetch("/api/auth/logout", { method: "POST" });
-            setUser(null);
+            storeClearUser();
+            setReadOnly(false);
             router.push("/login");
         } catch (error) {
             console.error("Failed to logout:", error);
         }
     };
 
-    return (
-        <AuthContext.Provider value={{ user, isLoading, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
-}
-
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
+    return { user, isLoading, login, logout };
 }

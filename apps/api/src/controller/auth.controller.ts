@@ -3,16 +3,29 @@ import { db, eq } from "@expense-tracker/db";
 import { users } from "@expense-tracker/db/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
+
+const registerSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const loginSchema = z.object({
+    email: z.email("Invalid email address"),
+    password: z.string().min(1, "Password is required"),
+});
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_dev";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { name, email, password } = req.body;
-        if (!name || !email || !password) {
-            res.status(400).json({ error: "Missing required fields" });
+    try {44
+        const parsed = registerSchema.safeParse(req.body);
+        if (!parsed.success) {
+            res.status(400).json({ error: parsed.error.issues[0].message });
             return;
         }
+        const { name, email, password } = parsed.data;
 
         // Check if user exists
         const existingUsers = await db.select().from(users).where(eq(users.email, email));
@@ -64,11 +77,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            res.status(400).json({ error: "Missing email or password" });
+        const parsed = loginSchema.safeParse(req.body);
+        if (!parsed.success) {
+            res.status(400).json({ error: parsed.error.issues[0].message });
             return;
         }
+        const { email, password } = parsed.data;
 
         // Find user
         const existingUsers = await db.select().from(users).where(eq(users.email, email));

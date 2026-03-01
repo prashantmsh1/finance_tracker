@@ -6,7 +6,8 @@
         "build": "turbo build",
         "lint": "turbo lint",
         "db:generate": "pnpm --filter @expense-tracker/db exec drizzle-kit generate",
-        "db:push": "pnpm --filter @expense-tracker/db exec drizzle-kit push"
+        "db:push": "pnpm --filter @expense-tracker/db exec drizzle-kit push",
+        "db:dev": "pnpm --filter @expense-tracker/db exec drizzle-kit studio"
     },
     "devDependencies": {
         "turbo": "^2"

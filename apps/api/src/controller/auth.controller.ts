@@ -16,10 +16,12 @@ const loginSchema = z.object({
     password: z.string().min(1, "Password is required"),
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback_secret_for_dev";
+const JWT_SECRET =
+    process.env.JWT_SECRET || "lsdkfjs895023oewe9875w9e8t7w3049tw7394bt3c74895cw34985";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-    try {44
+    try {
+        44;
         const parsed = registerSchema.safeParse(req.body);
         if (!parsed.success) {
             res.status(400).json({ error: parsed.error.issues[0].message });

@@ -12,11 +12,13 @@ import dashboardRouter from "./routes/dashboard.route.js";
 import { apiLimiter, authLimiter } from "./middleware/rate-limit.middleware.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
+import helmet from "helmet";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(helmet()); // Protects against XSS, clickjacking, etc.
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 

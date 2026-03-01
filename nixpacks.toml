@@ -1,0 +1,17 @@
+# ./nixpacks.toml
+
+# Specify the core environment explicitly
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
+
+# Step 1: Tell Nixpacks how to install your workspace dependencies
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+# Step 2: Tell Nixpacks how to build just the API and its database packages using turbo
+[phases.build]
+cmds = ["pnpm turbo run build --filter=@expense-tracker/api..."]
+
+# Step 3: Tell Nixpacks which script to run to start the Express server
+[start]
+cmd = "pnpm --filter @expense-tracker/api run start"

@@ -2,6 +2,7 @@ import { Response } from "express";
 import { db, eq, sql, and, gte, lte } from "@expense-tracker/db";
 import { transactions, categories } from "@expense-tracker/db/schema";
 import { AuthRequest } from "../middleware/auth.middleware.js";
+import { getCache, setCache } from "@expense-tracker/redis";
 
 // GET /api/dashboard/stats — summary statistics
 export const getDashboardStats = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -13,6 +14,13 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
 
         const month = req.query.month ? parseInt(req.query.month as string) : undefined;
         const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+
+        const cacheKey = `dashboard:stats:${targetUserId}:${year || "all"}:${month || "all"}`;
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            res.status(200).json(cached);
+            return;
+        }
 
         // Build conditions
         const conditions = [eq(transactions.userId, targetUserId)];
@@ -43,14 +51,18 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
         const stats = result[0];
         const balance = parseFloat(stats.totalIncome) - parseFloat(stats.totalExpense);
 
-        res.status(200).json({
+        const responseData = {
             stats: {
                 totalTransactions: stats.totalTransactions,
                 totalIncome: stats.totalIncome,
                 totalExpense: stats.totalExpense,
                 balance: balance.toFixed(2),
             },
-        });
+        };
+
+        await setCache(cacheKey, responseData, 300);
+
+        res.status(200).json(responseData);
     } catch (error) {
         console.error("Get Dashboard Stats Error:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -67,6 +79,13 @@ export const getCategoryBreakdown = async (req: AuthRequest, res: Response): Pro
 
         const month = req.query.month ? parseInt(req.query.month as string) : undefined;
         const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+
+        const cacheKey = `dashboard:categories:${targetUserId}:${year || "all"}:${month || "all"}`;
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            res.status(200).json(cached);
+            return;
+        }
 
         const conditions = [
             eq(transactions.userId, targetUserId),
@@ -99,7 +118,10 @@ export const getCategoryBreakdown = async (req: AuthRequest, res: Response): Pro
             .where(whereClause)
             .groupBy(transactions.categoryId, categories.name);
 
-        res.status(200).json({ breakdown: result });
+        const responseData = { breakdown: result };
+        await setCache(cacheKey, responseData, 300);
+
+        res.status(200).json(responseData);
     } catch (error) {
         console.error("Get Category Breakdown Error:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -118,6 +140,13 @@ export const getMonthlyTrends = async (req: AuthRequest, res: Response): Promise
         const now = new Date();
         const startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
 
+        const cacheKey = `dashboard:trends:${targetUserId}:${now.getFullYear()}:${now.getMonth()}`;
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            res.status(200).json(cached);
+            return;
+        }
+
         const result = await db
             .select({
                 month: sql<string>`to_char(${transactions.date}, 'YYYY-MM')`,
@@ -133,7 +162,10 @@ export const getMonthlyTrends = async (req: AuthRequest, res: Response): Promise
             )
             .orderBy(sql`to_char(${transactions.date}, 'YYYY-MM')`);
 
-        res.status(200).json({ trends: result });
+        const responseData = { trends: result };
+        await setCache(cacheKey, responseData, 300);
+
+        res.status(200).json(responseData);
     } catch (error) {
         console.error("Get Monthly Trends Error:", error);
         res.status(500).json({ error: "Internal server error" });

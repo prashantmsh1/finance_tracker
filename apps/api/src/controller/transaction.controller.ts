@@ -3,6 +3,7 @@ import { db, eq, sql, and, like, desc, asc, gte, lte } from "@expense-tracker/db
 import { transactions, categories } from "@expense-tracker/db/schema";
 import { AuthRequest } from "../middleware/auth.middleware.js";
 import { z } from "zod";
+import { clearCache } from "@expense-tracker/redis";
 
 const createTransactionSchema = z.object({
     amount: z.coerce
@@ -186,6 +187,8 @@ export const createTransaction = async (req: AuthRequest, res: Response): Promis
             })
             .returning();
 
+        await clearCache(`dashboard:*:${targetUserId}:*`);
+
         res.status(201).json({ transaction: newTransaction[0] });
     } catch (error) {
         console.error("Create Transaction Error:", error);
@@ -234,6 +237,8 @@ export const updateTransaction = async (req: AuthRequest, res: Response): Promis
             .where(eq(transactions.id, id))
             .returning();
 
+        await clearCache(`dashboard:*:${existing[0].userId}:*`);
+
         res.status(200).json({ transaction: updated[0] });
     } catch (error) {
         console.error("Update Transaction Error:", error);
@@ -263,6 +268,8 @@ export const deleteTransaction = async (req: AuthRequest, res: Response): Promis
         }
 
         await db.delete(transactions).where(eq(transactions.id, id));
+
+        await clearCache(`dashboard:*:${existing[0].userId}:*`);
 
         res.status(200).json({ message: "Transaction deleted successfully" });
     } catch (error) {

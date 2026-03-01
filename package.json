@@ -6,6 +6,7 @@
         "build": "turbo build",
         "lint": "turbo lint",
         "db:generate": "pnpm --filter @expense-tracker/db exec drizzle-kit generate",
+        "db:migrate": "pnpm --filter @expense-tracker/db exec drizzle-kit migrate",
         "db:push": "pnpm --filter @expense-tracker/db exec drizzle-kit push",
         "db:dev": "pnpm --filter @expense-tracker/db exec drizzle-kit studio"
     },

@@ -116,64 +116,79 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6">
             {/* Welcome header */}
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-                        Welcome back, {user.name}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Here&apos;s an overview of your finances.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    {isReadOnly && (
+            <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 p-6 sm:p-8 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 border border-border/50 bg-card">
+                <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/10" />
+                <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-pink-500/10 blur-3xl dark:bg-pink-500/10" />
+                <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="bg-linear-to-br from-foreground to-foreground/80 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent md:text-4xl">
+                            Welcome back, {user.name}
+                        </h1>
+                        <p className="mt-2 text-muted-foreground">
+                            Here&apos;s an overview of your finances and recent activity.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {isReadOnly && (
+                            <Badge
+                                variant="outline"
+                                className="border-amber-500/50 bg-amber-500/10 text-amber-600 backdrop-blur-sm dark:border-amber-400/30 dark:text-amber-400">
+                                <Eye className="mr-1.5 size-3.5" />
+                                Read-Only
+                            </Badge>
+                        )}
                         <Badge
-                            variant="outline"
-                            className="border-amber-500/50 text-amber-600 dark:text-amber-400">
-                            <Eye className="mr-1 size-3" />
-                            Read-Only Mode
+                            variant="secondary"
+                            className="bg-background/50 capitalize backdrop-blur-sm">
+                            {user.role}
                         </Badge>
-                    )}
-                    <Badge variant="secondary" className="capitalize">
-                        {user.role}
-                    </Badge>
+                    </div>
                 </div>
             </div>
 
-            {/* Month / Year Filter */}
-            <div className="flex items-center gap-3">
-                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-[140px]">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {MONTHS.map((m) => (
-                            <SelectItem key={m.value} value={m.value}>
-                                {m.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                    <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {years.map((y) => (
-                            <SelectItem key={y} value={y}>
-                                {y}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+            {/* Filters Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-4">
+                <h2 className="text-xl font-semibold tracking-tight">Overview</h2>
+                <div className="flex items-center gap-3">
+                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                        <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur-sm transition-colors hover:bg-background/80">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {MONTHS.map((m) => (
+                                <SelectItem
+                                    key={m.value}
+                                    value={m.value}
+                                    className="cursor-pointer">
+                                    {m.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <SelectTrigger className="w-[100px] bg-background/50 backdrop-blur-sm transition-colors hover:bg-background/80">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {years.map((y) => (
+                                <SelectItem key={y} value={y} className="cursor-pointer">
+                                    {y}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             {/* Stats cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/5">
+                    <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-                        <Wallet className="size-4 text-muted-foreground" />
+                        <div className="flex size-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 transition-transform group-hover:scale-110 dark:bg-indigo-900/50 dark:text-indigo-400">
+                            <Wallet className="size-4" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {statsLoading ? (
@@ -181,33 +196,38 @@ export default function DashboardPage() {
                         ) : (
                             <>
                                 <div
-                                    className={`text-2xl font-bold ${
+                                    className={`text-3xl font-bold tracking-tight ${
                                         balance >= 0
                                             ? "text-emerald-600 dark:text-emerald-400"
                                             : "text-red-600 dark:text-red-400"
                                     }`}>
                                     ${balance.toFixed(2)}
                                 </div>
-                                <p className="text-xs text-muted-foreground">For selected period</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    For selected period
+                                </p>
                             </>
                         )}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/5">
+                    <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Income</CardTitle>
-                        <TrendingUp className="size-4 text-emerald-500" />
+                        <div className="flex size-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-transform group-hover:scale-110 dark:bg-emerald-900/50 dark:text-emerald-400">
+                            <TrendingUp className="size-4" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {statsLoading ? (
                             <Skeleton className="h-8 w-24" />
                         ) : (
                             <>
-                                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                                <div className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
                                     ${totalIncome.toFixed(2)}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     Total income this period
                                 </p>
                             </>
@@ -215,20 +235,23 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/5">
+                    <div className="absolute inset-0 bg-linear-to-br from-red-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Expenses</CardTitle>
-                        <TrendingDown className="size-4 text-red-500" />
+                        <div className="flex size-8 items-center justify-center rounded-full bg-red-100 text-red-600 transition-transform group-hover:scale-110 dark:bg-red-900/50 dark:text-red-400">
+                            <TrendingDown className="size-4" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {statsLoading ? (
                             <Skeleton className="h-8 w-24" />
                         ) : (
                             <>
-                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                                <div className="text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">
                                     ${totalExpense.toFixed(2)}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     Total expenses this period
                                 </p>
                             </>
@@ -236,20 +259,25 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-primary/5">
+                    <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-                        <ArrowLeftRight className="size-4 text-muted-foreground" />
+                        <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-transform group-hover:scale-110 dark:bg-blue-900/50 dark:text-blue-400">
+                            <ArrowLeftRight className="size-4" />
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {statsLoading ? (
                             <Skeleton className="h-8 w-16" />
                         ) : (
                             <>
-                                <div className="text-2xl font-bold">
+                                <div className="text-3xl font-bold tracking-tight">
                                     {stats?.totalTransactions || 0}
                                 </div>
-                                <p className="text-xs text-muted-foreground">Total this period</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Total this period
+                                </p>
                             </>
                         )}
                     </CardContent>
@@ -432,33 +460,57 @@ export default function DashboardPage() {
             </Card>
 
             {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>
-                        {canWrite
-                            ? "Jump to common actions."
-                            : "You have read-only access. Contact an admin for write permissions."}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-3">
-                    <Button
-                        disabled={!canWrite}
-                        onClick={() => router.push("/dashboard/transactions")}>
-                        <Plus className="mr-2 size-4" />
-                        Add Transaction
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push("/dashboard/transactions")}>
-                        <ArrowLeftRight className="mr-2 size-4" />
-                        View Transactions
-                    </Button>
-                    <Button variant="outline" onClick={() => router.push("/dashboard/categories")}>
-                        View Categories
-                    </Button>
-                </CardContent>
-            </Card>
+            <h2 className="text-xl font-semibold tracking-tight mt-10 mb-4">Quick Actions</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+                <Button
+                    variant="outline"
+                    className="group relative h-auto flex-col items-start gap-4 overflow-hidden border-border/50 bg-card p-6 text-left hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                    disabled={!canWrite}
+                    onClick={() => router.push("/dashboard/transactions")}>
+                    <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="flex size-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 transition-transform group-hover:scale-110 dark:bg-indigo-900/50 dark:text-indigo-400">
+                        <Plus className="size-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-base">Add Transaction</h3>
+                        <p className="font-normal text-muted-foreground mt-1 whitespace-normal">
+                            Record a new income or expense.
+                        </p>
+                    </div>
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="group relative h-auto flex-col items-start gap-4 overflow-hidden border-border/50 bg-card p-6 text-left hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                    onClick={() => router.push("/dashboard/transactions")}>
+                    <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="flex size-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-transform group-hover:scale-110 dark:bg-blue-900/50 dark:text-blue-400">
+                        <ArrowLeftRight className="size-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-base">View Transactions</h3>
+                        <p className="font-normal text-muted-foreground mt-1 whitespace-normal">
+                            Search and filter past transactions.
+                        </p>
+                    </div>
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="group relative h-auto flex-col items-start gap-4 overflow-hidden border-border/50 bg-card p-6 text-left hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                    onClick={() => router.push("/dashboard/categories")}>
+                    <div className="absolute inset-0 bg-linear-to-br from-pink-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="flex size-10 items-center justify-center rounded-full bg-pink-100 text-pink-600 transition-transform group-hover:scale-110 dark:bg-pink-900/50 dark:text-pink-400">
+                        <Wallet className="size-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-base">Manage Categories</h3>
+                        <p className="font-normal text-muted-foreground mt-1 whitespace-normal">
+                            Customize your spending buckets.
+                        </p>
+                    </div>
+                </Button>
+            </div>
         </div>
     );
 }

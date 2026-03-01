@@ -10,17 +10,26 @@ import transactionRouter from "./routes/transaction.route.js";
 import categoryRouter from "./routes/category.route.js";
 import dashboardRouter from "./routes/dashboard.route.js";
 import { apiLimiter, authLimiter } from "./middleware/rate-limit.middleware.js";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
 // Apply rate limiting
 app.use("/api/auth", authLimiter);
 app.use("/api", apiLimiter);
+
+// Swagger API Documentation
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, { customSiteTitle: "Expense Tracker API Docs" }),
+);
 
 // Routes
 app.use("/api/auth", authRouter);

@@ -45,7 +45,7 @@ export const getCategories = async (_req: Request, res: Response): Promise<void>
     }
 };
 
-// POST /api/categories — create
+
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const parsed = categorySchema.safeParse(req.body);
@@ -71,7 +71,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     }
 };
 
-// PUT /api/categories/:id — update
+
 export const updateCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
@@ -88,7 +88,6 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        // Check for duplicate name if name is being changed
         if (name && name !== existing[0].name) {
             const duplicate = await db.select().from(categories).where(eq(categories.name, name));
             if (duplicate.length > 0) {
@@ -114,7 +113,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
     }
 };
 
-// DELETE /api/categories/:id — delete
+
 export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
@@ -134,7 +133,7 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
     }
 };
 
-// POST /api/categories/seed — admin-only, seed default categories
+
 export const seedCategories = async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
         let seeded = 0;
